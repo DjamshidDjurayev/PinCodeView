@@ -33,18 +33,25 @@ public class MainActivity extends AppCompatActivity {
 
       @Override public void onPinStepChange(String oldPin, int mode, int step) {
         // pin step change
-        if (mode == PinModes.RECOVERY) {
-          if (step == PinSteps.ENTER_NEW_PIN) {
-            pinTitle.setText("Enter new pin");
-          } else if (step == PinSteps.VERIFY_NEW_PIN) {
-            pinTitle.setText("Verify new pin");
-          }
+        switch (mode) {
+          case PinModes.VERIFY:
+            break;
+          case PinModes.SETUP:
+            if (step == PinSteps.VERIFY_NEW_PIN) {
+              pinTitle.setText("Verify new pin");
+            }
+            break;
+          case PinModes.RECOVERY:
+            if (step == PinSteps.ENTER_NEW_PIN) {
+              pinTitle.setText("Enter new pin");
+            } else if (step == PinSteps.VERIFY_NEW_PIN) {
+              pinTitle.setText("Verify new pin");
+            }
+            break;
         }
       }
 
       @Override public void onPinError(String oldPin, String pin, int mode) {
-        // pin error
-        //pinTitle.setText("Incorrect pin code");
       }
     });
     keyboardContainer.displayKeyboard();

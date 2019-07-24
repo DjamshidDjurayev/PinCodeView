@@ -1,9 +1,9 @@
 package co.djurayev.pincodeview.pincode;
 
 import android.content.Context;
+import android.content.res.TypedArray;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.os.Handler;
-import android.os.Looper;
 import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -18,6 +18,7 @@ import co.djurayev.pincodeview.keyboard.KeyboardContainer;
 import co.djurayev.pincodeview.listeners.AnimationsListener;
 import co.djurayev.pincodeview.pincode.annotations.PinModes;
 import co.djurayev.pincodeview.pincode.annotations.PinSteps;
+import co.djurayev.pincodeview.utils.Utils;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,39 +27,46 @@ public class PinCodeView extends LinearLayout {
   @PinSteps private int currentStep = PinSteps.ENTER_NEW_PIN;
 
   private OnPinCodeListener onPinCodeListener;
-  private Handler pinsHandler;
   private int pinIndex = 0;
   private boolean isAnimated = false;
+  private String pinCurrentValue;
   private StringBuilder pinValue = new StringBuilder(4);
   private StringBuilder pinOldValue = new StringBuilder(4);
-  private String pinCurrentValue;
   private List<PinItem> pinItems = new ArrayList<>(4);
   private KeyboardContainer keyboardContainer;
+  private int pinSize;
+  private int pinMarginLeft;
+  private int pinMarginRight;
+  private int pinMarginTop;
+  private int pinMarginBottom;
+  private Drawable emptyDotDrawable = null;
+  private Drawable fullDotDrawable = null;
+  private Drawable errorDotDrawable = null;
 
   public PinCodeView(@NonNull Context context) {
     super(context);
-    initialize();
+    initialize(null);
   }
 
   public PinCodeView(@NonNull Context context,
       @Nullable AttributeSet attrs) {
     super(context, attrs);
-    initialize();
+    initialize(attrs);
   }
 
   public PinCodeView(@NonNull Context context,
       @Nullable AttributeSet attrs, int defStyleAttr) {
     super(context, attrs, defStyleAttr);
-    initialize();
+    initialize(attrs);
   }
 
   @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP) public PinCodeView(@NonNull Context context,
       @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
     super(context, attrs, defStyleAttr, defStyleRes);
-    initialize();
+    initialize(attrs);
   }
 
-  private void initialize() {
+  private void initialize(@Nullable AttributeSet attrs) {
     LinearLayout.LayoutParams params =
         new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
     params.gravity = Gravity.CENTER;
@@ -67,13 +75,55 @@ public class PinCodeView extends LinearLayout {
     setOrientation(HORIZONTAL);
     setGravity(Gravity.CENTER);
 
-    pinsHandler = new Handler(Looper.getMainLooper());
     inflate(getContext(), R.layout.pin_code_view, this);
 
     pinItems.add(findViewById(R.id.pint_item_1));
     pinItems.add(findViewById(R.id.pint_item_2));
     pinItems.add(findViewById(R.id.pint_item_3));
     pinItems.add(findViewById(R.id.pint_item_4));
+
+    if (attrs != null) {
+      TypedArray typedArray = getContext().obtainStyledAttributes(attrs, R.styleable.PinCodeView);
+
+      try {
+        pinSize = typedArray.getDimensionPixelSize(R.styleable.PinCodeView_pinSize,
+            Utils.toPx(getContext(), 20));
+        pinMarginLeft = typedArray.getDimensionPixelSize(R.styleable.PinCodeView_pinMarginLeft,
+            Utils.toPx(getContext(), 8));
+        pinMarginRight = typedArray.getDimensionPixelSize(R.styleable.PinCodeView_pinMarginRight,
+            Utils.toPx(getContext(), 8));
+        pinMarginTop = typedArray.getDimensionPixelSize(R.styleable.PinCodeView_pinMarginTop,
+            Utils.toPx(getContext(), 6));
+        pinMarginBottom = typedArray.getDimensionPixelSize(R.styleable.PinCodeView_pinMarginBottom,
+            Utils.toPx(getContext(), 6));
+        emptyDotDrawable = typedArray.getDrawable(R.styleable.PinCodeView_pinEmptyDrawable);
+        fullDotDrawable = typedArray.getDrawable(R.styleable.PinCodeView_pinFullDrawable);
+        errorDotDrawable = typedArray.getDrawable(R.styleable.PinCodeView_pinErrorDrawable);
+
+        setInitialValues();
+      } finally {
+        if (typedArray != null) typedArray.recycle();
+      }
+    } else {
+      setDefaultValues();
+    }
+  }
+
+  private void setDefaultValues() {
+    pinSize = Utils.toPx(getContext(), 20);
+    pinMarginLeft = Utils.toPx(getContext(), 8);
+    pinMarginRight = Utils.toPx(getContext(), 8);
+    pinMarginTop = Utils.toPx(getContext(), 6);
+    pinMarginBottom = Utils.toPx(getContext(), 6);
+    setInitialValues();
+  }
+
+  private void setInitialValues() {
+    for (int i = 0; i < pinItems.size(); i++) {
+      pinItems.get(i).setPinMargins(pinMarginLeft, pinMarginTop, pinMarginRight, pinMarginBottom);
+      pinItems.get(i).setPinSize(pinSize);
+      pinItems.get(i).setDrawables(emptyDotDrawable, fullDotDrawable, errorDotDrawable);
+    }
   }
 
   @MainThread
@@ -90,14 +140,15 @@ public class PinCodeView extends LinearLayout {
         case PinModes.VERIFY:
           onPinCodeListener.onPinInputCompleted(getPinValue(), pinMode);
           break;
+
         case PinModes.SETUP:
           // first step finished
           if (currentStep == PinSteps.ENTER_NEW_PIN) {
             pinOldValue.append(pinValue.toString());
-            onPinCodeListener.onPinStepChange(pinOldValue.toString(), pinMode, currentStep);
             // clear all dots
             clearAll(false, 0);
             currentStep = PinSteps.VERIFY_NEW_PIN;
+            onPinCodeListener.onPinStepChange(pinOldValue.toString(), pinMode, currentStep);
           } else if (currentStep == PinSteps.VERIFY_NEW_PIN) {
             // second step finished
             if (pinOldValue.toString().equals(pinValue.toString())) {
@@ -108,6 +159,7 @@ public class PinCodeView extends LinearLayout {
             }
           }
           break;
+
         case PinModes.RECOVERY:
           if (currentStep == PinSteps.ENTER_CURRENT_PIN) {
             // first step
@@ -179,17 +231,22 @@ public class PinCodeView extends LinearLayout {
   }
 
   private void resetViews() {
-    // clear all dots
     clearAll(false, 0);
+    // clear all dots
+    for (int i = 0; i < pinItems.size(); i++) {
+      pinItems.get(i).clearDot();
+    }
   }
 
   private void setErrorViews() {
-    // TODO set errors
+    for (int i = 0; i < pinItems.size(); i++) {
+      pinItems.get(i).setErrorDot();
+    }
   }
 
   public void clearAll(boolean animated, int delay) {
     for (int i = 0; i < pinItems.size(); i++) {
-      pinsHandler.postDelayed(() -> removeDot(animated), delay + delay * i);
+      removeDot(animated);
     }
   }
 
@@ -199,6 +256,10 @@ public class PinCodeView extends LinearLayout {
 
   @PinModes public int getPinMode() {
     return pinMode;
+  }
+
+  @PinSteps public int getPinStep() {
+    return currentStep;
   }
 
   public void setPinMode(@PinModes int pinMode) {
@@ -241,5 +302,17 @@ public class PinCodeView extends LinearLayout {
         }
       });
     }
+  }
+
+  public void dispose() {
+    for (int i = 0; i < pinItems.size(); i++) {
+      pinItems.get(i).dispose();
+    }
+
+    keyboardContainer = null;
+    fullDotDrawable = null;
+    emptyDotDrawable = null;
+    errorDotDrawable = null;
+    onPinCodeListener = null;
   }
 }

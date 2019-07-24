@@ -5,24 +5,32 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
+import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.view.Gravity;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AnticipateOvershootInterpolator;
 import android.view.animation.OvershootInterpolator;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import co.djurayev.pincodeview.R;
 
-public class PinItem extends FrameLayout {
+public class PinItem extends RelativeLayout {
   private static final int ANIMATION_DURATION = 400;
 
-  private ImageView emptyDot;
-  private ImageView fullDot;
+  private View emptyDot;
+  private View fullDot;
+
+  private Drawable fullDotDrawable = null;
+  private Drawable emptyDotDrawable = null;
+  private Drawable errorDotDrawable = null;
 
   public PinItem(@NonNull Context context) {
     super(context);
@@ -48,10 +56,20 @@ public class PinItem extends FrameLayout {
   }
 
   private void initialize() {
+    RelativeLayout.LayoutParams params =
+        new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT);
+    setLayoutParams(params);
+    setGravity(Gravity.CENTER);
+
     inflate(getContext(), R.layout.pin_item, this);
 
     emptyDot = findViewById(R.id.empty_dot);
     fullDot = findViewById(R.id.full_dot);
+
+    fullDotDrawable = ContextCompat.getDrawable(getContext(), R.drawable.full_dot);
+    emptyDotDrawable = ContextCompat.getDrawable(getContext(), R.drawable.empty_dot);
+    errorDotDrawable = ContextCompat.getDrawable(getContext(), R.drawable.error_dot);
   }
 
   public void addDot(boolean animated) {
@@ -113,5 +131,54 @@ public class PinItem extends FrameLayout {
       animatorSet.start();
     }
     fullDot.setVisibility(GONE);
+  }
+
+  public void setPinSize(int pinSize) {
+    RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) fullDot.getLayoutParams();
+    params.width = pinSize;
+    params.height = pinSize;
+    fullDot.setLayoutParams(params);
+    emptyDot.setLayoutParams(params);
+  }
+
+  public void setPinMargins(int... margins) {
+    RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) fullDot.getLayoutParams();
+    params.setMargins(margins[0], margins[1], margins[2], margins[3]);
+    fullDot.setLayoutParams(params);
+    emptyDot.setLayoutParams(params);
+  }
+
+  public void setDrawables(Drawable... drawables) {
+    if (drawables == null) return;
+
+    if (drawables[0] != null) {
+      emptyDotDrawable = drawables[0];
+      emptyDot.setBackground(emptyDotDrawable);
+    }
+
+    if (drawables[1] != null) {
+      fullDotDrawable = drawables[1];
+      fullDot.setBackground(fullDotDrawable);
+    }
+
+    if (drawables[2] != null) {
+      errorDotDrawable = drawables[2];
+    }
+  }
+
+  public void setErrorDot() {
+    fullDot.setBackground(errorDotDrawable);
+  }
+
+  public void clearDot() {
+    fullDot.setBackground(fullDotDrawable);
+  }
+
+  public void dispose() {
+    fullDotDrawable = null;
+    emptyDotDrawable = null;
+    errorDotDrawable = null;
+    emptyDot = null;
+    fullDot = null;
   }
 }
