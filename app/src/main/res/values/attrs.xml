@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <declare-styleable name="PinCodeView">
+
+  </declare-styleable>
+
+  <declare-styleable name="PinItem">
+    <attr name="dotSize" format="dimension"/>
+  </declare-styleable>
+</resources>

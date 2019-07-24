@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <co.djurayev.pincodeview.pincode.PinItem
+      android:id="@+id/pint_item_1"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"/>
+
+  <co.djurayev.pincodeview.pincode.PinItem
+      android:id="@+id/pint_item_2"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"/>
+
+  <co.djurayev.pincodeview.pincode.PinItem
+      android:id="@+id/pint_item_3"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"/>
+
+  <co.djurayev.pincodeview.pincode.PinItem
+      android:id="@+id/pint_item_4"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"/>
+
+</merge>

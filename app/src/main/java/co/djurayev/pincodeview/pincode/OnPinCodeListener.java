@@ -1,0 +1,11 @@
+package co.djurayev.pincodeview.pincode;
+
+import co.djurayev.pincodeview.pincode.annotations.PinModes;
+
+public interface OnPinCodeListener {
+  void onPinInputCompleted(String pin, @PinModes int mode);
+
+  void onPinStepChange(String oldPin, @PinModes int mode, int step);
+
+  void onPinError(String oldPin, String pin, @PinModes int mode);
+}
