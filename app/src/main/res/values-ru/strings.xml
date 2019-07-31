@@ -1,4 +1,4 @@
 <resources>
   <string name="app_name">PinCodeView</string>
-  <string name="enter_new_pin">Enter new pin</string>
+  <string name="enter_new_pin">Введите пин-код</string>
 </resources>

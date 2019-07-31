@@ -12,7 +12,7 @@
       android:id="@+id/pin_title"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:text="Enter new pin"
+      android:text="@string/enter_new_pin"
       android:textSize="26sp"
       android:textColor="@android:color/black"
       android:layout_gravity="center"
@@ -30,6 +30,12 @@
       app:pinSize="24dp"
       app:pinMarginRight="12dp"
       app:pinMarginLeft="12dp" />
+
+  <Button
+      android:id="@+id/button"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="axaxax"/>
 
   <co.djurayev.pincodeview.keyboard.KeyboardContainer
       android:id="@+id/keyboard_container"

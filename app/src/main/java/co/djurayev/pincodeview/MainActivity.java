@@ -1,5 +1,6 @@
 package co.djurayev.pincodeview;
 
+import android.content.Context;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.TextView;
@@ -12,6 +13,10 @@ import co.djurayev.pincodeview.pincode.annotations.PinSteps;
 public class MainActivity extends AppCompatActivity {
   private TextView pinTitle;
 
+  @Override protected void attachBaseContext(Context newBase) {
+    super.attachBaseContext(LocaleHelper.setLocale(newBase));
+  }
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -22,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
 
     PinCodeView pinCodeView = findViewById(R.id.pin_code_view);
     pinCodeView.setAnimated(true);
-    pinCodeView.setPinMode(PinModes.RECOVERY);
+    pinCodeView.setPinMode(PinModes.VERIFY);
     pinCodeView.setPinCurrentValue("1234");
     pinCodeView.setKeyboardContainer(keyboardContainer);
     pinCodeView.setOnPinCodeListener(new OnPinCodeListener() {
@@ -56,5 +61,13 @@ public class MainActivity extends AppCompatActivity {
     });
 
     keyboardContainer.displayKeyboard();
+
+    findViewById(R.id.button).setOnClickListener(v -> {
+      LocaleHelper.setLocale(MainActivity.this, LocaleHelper.ENGLISH);
+
+
+      Prefs.setAppLanguage("en");
+      recreate();
+    });
   }
 }
