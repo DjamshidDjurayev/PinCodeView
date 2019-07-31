@@ -54,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
       @Override public void onPinError(String oldPin, String pin, int mode) {
       }
     });
+
     keyboardContainer.displayKeyboard();
   }
 }
